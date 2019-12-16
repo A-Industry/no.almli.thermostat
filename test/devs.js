@@ -1,5 +1,7 @@
 'use strict';
 
+const Controller = require('node-pid-controller');
+
 const getDevice = function () {
     let logs = [];
     let capabilities = {};
@@ -35,7 +37,14 @@ const getDevice = function () {
         _humidityChangedTrigger: {
             trigger: function (device) {
             }
-        }
+        },
+        _ctr: new Controller({
+            k_p: 0.25,
+            k_i: 0.1,
+            k_d: 0.1,
+            i_max: 60,
+            dt: 60
+        })
     };
 };
 

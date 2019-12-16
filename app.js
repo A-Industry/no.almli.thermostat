@@ -2,12 +2,12 @@
 
 const Homey = require('homey');
 
-class VThermoApp extends Homey.App {
+class PIDVThermoApp extends Homey.App {
 
     async onInit() {
-        this.log('VThermoApp is running...');
+        this.log('PID VThermo is running...');
     }
 
 }
 
-module.exports = VThermoApp;
+module.exports = PIDVThermoApp;

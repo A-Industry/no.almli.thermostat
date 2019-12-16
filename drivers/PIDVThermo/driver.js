@@ -2,16 +2,16 @@
 
 const Homey = require('homey');
 
-class VHumidityDriver extends Homey.Driver {
+class PIDVThermoDriver extends Homey.Driver {
 
     onInit() {
-        this.log('VHumidity driver has been initialized');
+        this.log('PID VThermo driver has been initialized');
     }
 
     onPairListDevices(data, callback) {
         let devices = [
             {
-                "name": "VHumidity",
+                "name": "PID VThermo",
                 "data": {
                     "id": guid()
                 }
@@ -22,7 +22,7 @@ class VHumidityDriver extends Homey.Driver {
 
 }
 
-module.exports = VHumidityDriver;
+module.exports = PIDVThermoDriver;
 
 function guid() {
     function s4() {
