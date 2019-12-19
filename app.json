@@ -132,7 +132,7 @@
               "label": {
                 "en": "k_p"
               },
-              "value": 2
+              "value": 50
             },
             {
               "id": "k_i",
@@ -140,7 +140,7 @@
               "label": {
                 "en": "k_i"
               },
-              "value": 0.01
+              "value": 0.2
             },
             {
               "id": "k_d",
@@ -148,7 +148,23 @@
               "label": {
                 "en": "k_d"
               },
-              "value": 0.01
+              "value": 0
+            },
+            {
+              "id": "plan_length_min",
+              "type": "number",
+              "label": {
+                "en": "Minimal heating plan length (minutes)"
+              },
+              "value": 10
+            },
+            {
+              "id": "plan_length_max",
+              "type": "number",
+              "label": {
+                "en": "Maximal heating plan length (minutes)"
+              },
+              "value": 25
             },
             {
               "id": "invert",

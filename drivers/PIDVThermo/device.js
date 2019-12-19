@@ -18,8 +18,8 @@ class PIDVThermoDevice extends Homey.Device {
         this._turnedOffTrigger
             .register();
 
-
-        this._heatingHistory = [];
+        this._heatingPlan = null;
+        this._heatingPlanIndex = 0;
 
         new Homey.FlowCardCondition('vt_onoff_is_on')
             .register()
@@ -84,21 +84,36 @@ class PIDVThermoDevice extends Homey.Device {
         this.curTimeout = setTimeout(this.checkTemp.bind(this), seconds * 1000);
     }
 
-    addOnOffToHeatingHistory(onOff) {
-        this._heatingHistory.push(onOff);
+    generateHeatingPlan(heatingPct) {
+        const settings = this.getSettings();
+        const length = settings.plan_length_max - ((settings.plan_length_max - settings.plan_length_min)/100 * heatingPct);
+        const minsOfHeating = Math.round(length/100 * heatingPct);
+        const result = [];
 
-        if(this._heatingHistory.length > 60) {
-            this._heatingHistory = this._heatingHistory.slice(1);
+        for(let i = 0; i < length; i++) {
+            result.push(i < minsOfHeating);
         }
 
-        this.log('_heatingHistory length:', this._heatingHistory.length);
+        this.log(`Generated heating plan based on ${minsOfHeating} minutes of heating for plan of ${length} minutes long (${heatingPct}).`);
+        this.log(result);
+
+        this._heatingPlan = result;
     }
 
-    heatingAllowed(allowedMinsOfHeatingPerHour) {
-        allowedMinsOfHeatingPerHour = allowedMinsOfHeatingPerHour < 1 ? 0 : allowedMinsOfHeatingPerHour;
-        const minsOfHeatingPastHour = this._heatingHistory.filter(Boolean).length;
+    heatingAllowed() {
+        if(!this._heatingPlan || !this._heatingPlan.length) {
+            return false;
+        }
 
-        const result = minsOfHeatingPastHour < allowedMinsOfHeatingPerHour;
+        if(this._heatingPlanIndex >= this._heatingPlan.length) {
+            this._heatingPlanIndex = 0;
+        }
+
+        this.log(`Executing plan of ${this._heatingPlan.length} minutes long. Currently at index ${this._heatingPlanIndex} (zero based)`);
+
+        const result = this._heatingPlan[this._heatingPlanIndex];
+
+        this._heatingPlanIndex++;
 
         return result;
     }
@@ -115,8 +130,7 @@ class PIDVThermoDevice extends Homey.Device {
                 k_p: settings.k_p,
                 k_i: settings.k_i,
                 k_d: settings.k_d,
-                i_max: 60,
-                dt: 60
+                i_max: 100
             });
         }
     }
@@ -124,7 +138,6 @@ class PIDVThermoDevice extends Homey.Device {
     clearHistory() {
         this.log('Reset history and controller');
 
-        this._heatingHistory = [];
         this._ctr = null;
     }
 
@@ -160,10 +173,6 @@ class PIDVThermoDevice extends Homey.Device {
 
         let contactAlarm = temperatureLib.hasContactAlarm(this, zoneId, devices, this.getSettings());
         let onoff = await temperatureLib.resolveOnoff(this, temperature, targetTemp, this.getSettings(), opts, contactAlarm);
-
-        console.log('Debugging: would have turned on or off device: ' + (onoff ? 'on': 'off'));
-
-        this.addOnOffToHeatingHistory(onoff);
 
         await temperatureLib.switchHeaterDevices(this, zoneId, devices, onoff);
 
