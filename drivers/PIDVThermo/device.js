@@ -85,6 +85,11 @@ class PIDVThermoDevice extends Homey.Device {
     }
 
     generateHeatingPlan(heatingPct) {
+        if(heatingPct <= 0 ) {
+            this._heatingPlan = [false];
+            return;
+        }
+
         const settings = this.getSettings();
         const length = settings.plan_length_max - ((settings.plan_length_max - settings.plan_length_min)/100 * heatingPct);
         const minsOfHeating = Math.round(length/100 * heatingPct);
