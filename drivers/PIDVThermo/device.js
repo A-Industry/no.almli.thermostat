@@ -20,6 +20,7 @@ class PIDVThermoDevice extends Homey.Device {
 
         this._heatingPlan = null;
         this._heatingPlanIndex = 0;
+        this._lastHeatingIndex = 0;
 
         new Homey.FlowCardCondition('vt_onoff_is_on')
             .register()
@@ -107,6 +108,7 @@ class PIDVThermoDevice extends Homey.Device {
 
     heatingAllowed() {
         if(!this._heatingPlan || !this._heatingPlan.length) {
+            this._heatingPlanIndex = 0;
             return false;
         }
 
@@ -114,9 +116,19 @@ class PIDVThermoDevice extends Homey.Device {
             this._heatingPlanIndex = 0;
         }
 
+        if(this._lastHeatingIndex >= this._heatingPlan.length) {
+            this._heatingPlanIndex = 0;
+        }
+
         this.log(`Executing plan of ${this._heatingPlan.length} minutes long. Currently at index ${this._heatingPlanIndex} (zero based)`);
 
         const result = this._heatingPlan[this._heatingPlanIndex];
+
+        if(!result) {
+            this._lastHeatingIndex++;
+        } else {
+            this._lastHeatingIndex = 0;
+        }
 
         this._heatingPlanIndex++;
 
