@@ -112,11 +112,7 @@ class PIDVThermoDevice extends Homey.Device {
             return false;
         }
 
-        if(this._heatingPlanIndex >= this._heatingPlan.length) {
-            this._heatingPlanIndex = 0;
-        }
-
-        if(this._lastHeatingIndex >= this._heatingPlan.length) {
+        if(this._heatingPlanIndex >= this._heatingPlan.length || this._lastHeatingIndex >= this._heatingPlan.length) {
             this._heatingPlanIndex = 0;
         }
 
@@ -143,11 +139,13 @@ class PIDVThermoDevice extends Homey.Device {
             this._prev_k_i = settings.k_i;
             this._prev_k_d = settings.k_d;
 
+            this.log(`PID settings: P: ${settings.k_p}, I: ${settings.k_i}, D: ${settings.k_d}`);
+
             this._ctr = new Controller({
                 k_p: settings.k_p,
                 k_i: settings.k_i,
                 k_d: settings.k_d,
-                i_max: 100
+                i_max: 100/settings.k_i
             });
         }
     }
